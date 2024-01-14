@@ -1,0 +1,41 @@
+﻿<Window x:Class="TeamCompetition.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:TeamCompetition.ViewModels"
+        mc:Ignorable="d"
+        Title="Team Competition" Height="450" Width="800" Icon="/Views/Images/sk70_tran.png" Closing="Window_Closing">
+    
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <DockPanel LastChildFill="True">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Meny">
+                <MenuItem Header="Spara" Command="{Binding Save}"/>
+                <MenuItem Header="Ladda" Command="{Binding Load}"/>
+                <MenuItem Header="Avsluta" Command="{Binding Exit}"/>
+            </MenuItem>
+        </Menu>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="5,5,5,5">
+            <Label x:Name="index" Content="Index" Padding="0,0,100,0"/>
+            <Button  Content="Summera" Width="100" Margin="5,0,5,0" Height="25" Command="{Binding Summera}"/>
+            <Button  Content="Rensa" Width="100" Margin="5,0,5,0"  Height="25" Command="{Binding Rensa}"/>
+        </StackPanel>
+        <DataGrid x:Name="tabell" ItemsSource="{Binding Teams, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoGenerateColumns="False" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Lagnamn" Width="250" Binding="{Binding Namn}"/>
+                <DataGridTextColumn Header="Ryggsim" Width="*"  Binding="{Binding Ryggsim}"/>
+                <DataGridTextColumn Header="Bröstsim" Width="*"  Binding="{Binding Bröstsim}"/>
+                <DataGridTextColumn Header="Fjärilsim" Width="*"  Binding="{Binding Fjärilssim}"/>
+                <DataGridTextColumn Header="Frisim" Width="*"  Binding="{Binding Frisim}"/>
+                <DataGridTextColumn Header="Summering" Width="auto"  Binding="{Binding Summering}" IsReadOnly="true"/>
+                <DataGridTextColumn Header="Placering" Width="auto"  Binding="{Binding Placering}" IsReadOnly="true"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+    </DockPanel>
+    
+</Window>
