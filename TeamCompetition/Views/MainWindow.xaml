@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:TeamCompetition.ViewModels"
         mc:Ignorable="d"
-        Title="Team Competition" Height="450" Width="800" Icon="/Views/Images/sk70_tran.png" Closing="Window_Closing">
+        Title="Team Competition" Height="450" Width="800" Icon="/Views/Images/sk70_tran.png" Closing="Window_Closing" Activated="Window_Activated">
     
     <Window.DataContext>
         <vm:MainViewModel/>
@@ -14,28 +14,76 @@
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Meny">
+                <MenuItem Header="Inställningar"/>
                 <MenuItem Header="Spara" Command="{Binding Save}"/>
                 <MenuItem Header="Ladda" Command="{Binding Load}"/>
                 <MenuItem Header="Avsluta" Command="{Binding Exit}"/>
             </MenuItem>
         </Menu>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" HorizontalAlignment="Center" Margin="5,5,5,5">
-            <Label x:Name="index" Content="Index" Padding="0,0,100,0"/>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Tilläggstid:"/>
+                <StackPanel Orientation="Vertical">
+                    <Button x:Name="addHerr" Content="+" FontSize="5" Width="12" Margin="5,0,5,0" Height="12" Command="{Binding AdderaTillägg}"/>
+                    <Button x:Name="remHerr" Content="-" FontSize="5" Width="12" Margin="5,2,5,0" Height="12" Command="{Binding TabortTillägg}"/>
+                </StackPanel>
+            </StackPanel>
             <Button  Content="Summera" Width="100" Margin="5,0,5,0" Height="25" Command="{Binding Summera}"/>
             <Button  Content="Rensa" Width="100" Margin="5,0,5,0"  Height="25" Command="{Binding Rensa}"/>
         </StackPanel>
-        <DataGrid x:Name="tabell" ItemsSource="{Binding Teams, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoGenerateColumns="False" SelectionMode="Single">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Lagnamn" Width="250" Binding="{Binding Namn}"/>
-                <DataGridTextColumn Header="Ryggsim" Width="*"  Binding="{Binding Ryggsim}"/>
-                <DataGridTextColumn Header="Bröstsim" Width="*"  Binding="{Binding Bröstsim}"/>
-                <DataGridTextColumn Header="Fjärilsim" Width="*"  Binding="{Binding Fjärilssim}"/>
-                <DataGridTextColumn Header="Frisim" Width="*"  Binding="{Binding Frisim}"/>
-                <DataGridTextColumn Header="Summering" Width="auto"  Binding="{Binding Summering}" IsReadOnly="true"/>
-                <DataGridTextColumn Header="Placering" Width="auto"  Binding="{Binding Placering}" IsReadOnly="true"/>
-            </DataGrid.Columns>
-        </DataGrid>
-
+        <TabControl SelectedValue="{Binding SelectedTab}">
+            <TabItem x:Name="tabHerrar" Header="Herrar">
+                <DataGrid x:Name="tabellHerrar" ItemsSource="{Binding TeamsHerrar, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedItem}" CurrentColumn="{Binding SelectedColumn}" AutoGenerateColumns="False" SelectionMode="Extended">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Lagnamn" Width="250" Binding="{Binding Namn}"/>
+                        <DataGridTextColumn Header="Ryggsim" Width="*"  Binding="{Binding Ryggsim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggRygg}"/>
+                        <DataGridTextColumn Header="Bröstsim" Width="*"  Binding="{Binding Bröstsim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggBröst}"/>
+                        <DataGridTextColumn Header="Fjärilssim" Width="*"  Binding="{Binding Fjärilssim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggFjäril}"/>
+                        <DataGridTextColumn Header="Frisim" Width="*"  Binding="{Binding Frisim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggFrisim}"/>
+                        <DataGridTextColumn Header="Summering" Width="auto"  Binding="{Binding Summering}" IsReadOnly="true"/>
+                        <DataGridTextColumn Header="Placering" Width="auto"  Binding="{Binding Placering}" IsReadOnly="true"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            <TabItem x:Name="tabDamer" Header="Damer">
+                <DataGrid x:Name="tabellDamer" ItemsSource="{Binding TeamsDamer, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoGenerateColumns="False" SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Lagnamn" Width="250" Binding="{Binding Namn}"/>
+                        <DataGridTextColumn Header="Ryggsim" Width="*"  Binding="{Binding Ryggsim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggRygg}"/>
+                        <DataGridTextColumn Header="Bröstsim" Width="*"  Binding="{Binding Bröstsim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggBröst}"/>
+                        <DataGridTextColumn Header="Fjärilssim" Width="*"  Binding="{Binding Fjärilssim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggFjäril}"/>
+                        <DataGridTextColumn Header="Frisim" Width="*"  Binding="{Binding Frisim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggFrisim}"/>
+                        <DataGridTextColumn Header="Summering" Width="auto"  Binding="{Binding Summering}" IsReadOnly="true"/>
+                        <DataGridTextColumn Header="Placering" Width="auto"  Binding="{Binding Placering}" IsReadOnly="true"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            <TabItem x:Name="tabMix" Header="Mix">
+                <DataGrid x:Name="tabellMix" ItemsSource="{Binding TeamsMix, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoGenerateColumns="False" SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Lagnamn" Width="250" Binding="{Binding Namn}"/>
+                        <DataGridTextColumn Header="Ryggsim" Width="*"  Binding="{Binding Ryggsim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggRygg}"/>
+                        <DataGridTextColumn Header="Bröstsim" Width="*"  Binding="{Binding Bröstsim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggBröst}"/>
+                        <DataGridTextColumn Header="Fjärilssim" Width="*"  Binding="{Binding Fjärilssim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggFjäril}"/>
+                        <DataGridTextColumn Header="Frisim" Width="*"  Binding="{Binding Frisim}"/>
+                        <DataGridTextColumn Header="DSQ" Width="35" Binding="{Binding TilläggFrisim}"/>
+                        <DataGridTextColumn Header="Summering" Width="auto"  Binding="{Binding Summering}" IsReadOnly="true"/>
+                        <DataGridTextColumn Header="Placering" Width="auto"  Binding="{Binding Placering}" IsReadOnly="true"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
     </DockPanel>
     
 </Window>

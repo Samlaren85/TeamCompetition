@@ -1,4 +1,6 @@
 ﻿using System.Windows;
+using System.Xml.Serialization;
+using TeamCompetition.Models;
 using TeamCompetition.ViewModels;
 
 namespace TeamCompetition.Views
@@ -19,6 +21,17 @@ namespace TeamCompetition.Views
             if (mainViewModel.Exit.CanExecute(null))
                 mainViewModel.Exit.Execute(null);
             e.Cancel = true;
+        }
+
+        private void Window_Activated(object sender, System.EventArgs e)
+        {
+            //Visar flikarna för de aktiva deltagarna
+            if (UserSettings.DELTAGANDE_HERRAR) tabHerrar.Visibility = Visibility.Visible;
+            else tabHerrar.Visibility = Visibility.Collapsed;
+            if (UserSettings.DELTAGANDE_DAMER) tabDamer.Visibility = Visibility.Visible;
+            else tabDamer.Visibility = Visibility.Collapsed;
+            if (UserSettings.DELTAGANDE_MIX) tabMix.Visibility = Visibility.Visible;
+            else tabMix.Visibility = Visibility.Collapsed;
         }
     }
 }

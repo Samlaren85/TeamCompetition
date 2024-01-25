@@ -4,24 +4,35 @@ using System.Security.Cryptography;
 
 namespace TeamCompetition.Models
 {
-    public class Lag: ObservableObject
+    public class Lag : ObservableObject
     {
         public string Namn { get; set; }
         private string ryggsim;
-        public string Ryggsim 
+        public string Ryggsim
         {
-            get 
+            get
             {
                 if (ÄrNummer(ryggsim)) return TillTid(ryggsim);
                 else return ryggsim;
             }
-            set 
+            set
             {
                 if (value.Contains(".") || value.Contains(",") || value.Contains(":") || value.Contains(";")) ryggsim = Punkter(value);
                 else ryggsim = value;
-                if (ÄrNummer(ryggsim)) ryggsim = RäknaTid(ryggsim);
+                if (ÄrNummer(ryggsim)) ryggsim = RäknaTid(ryggsim, Simsätten.ryggsim);
                 OnPropertyChanged();
-            } 
+            }
+        }
+        private int tilläggRygg;
+        public int TilläggRygg
+        {
+            get { return tilläggRygg; }
+            set
+            {
+                tilläggRygg = value;
+                if (ÄrNummer(ryggsim)) ryggsim = RäknaTid(ryggsim, Simsätten.ryggsim);
+                OnPropertyChanged();
+            }
         }
         private string bröstsim;
         public string Bröstsim
@@ -35,23 +46,45 @@ namespace TeamCompetition.Models
             {
                 if (value.Contains(".") || value.Contains(",") || value.Contains(":") || value.Contains(";")) bröstsim = Punkter(value);
                 else bröstsim = value;
-                if (ÄrNummer(bröstsim)) bröstsim = RäknaTid(bröstsim);
+                if (ÄrNummer(bröstsim)) bröstsim = RäknaTid(bröstsim, Simsätten.bröstsim);
                 OnPropertyChanged();
             }
         }
-        private string fjärilsim;
+        private int tilläggBröst;
+        public int TilläggBröst
+        {
+            get { return tilläggBröst; }
+            set
+            {
+                tilläggBröst = value;
+                if (ÄrNummer(bröstsim)) bröstsim = RäknaTid(bröstsim, Simsätten.bröstsim);
+                OnPropertyChanged();
+            }
+        }
+        private string fjärilssim;
         public string Fjärilssim
         {
             get
             {
-                if (ÄrNummer(fjärilsim)) return TillTid(fjärilsim);
-                else return fjärilsim;
+                if (ÄrNummer(fjärilssim)) return TillTid(fjärilssim);
+                else return fjärilssim;
             }
             set
             {
-                if (value.Contains(".") || value.Contains(",") || value.Contains(":") || value.Contains(";")) fjärilsim = Punkter(value);
-                else fjärilsim = value;
-                if (ÄrNummer(fjärilsim)) fjärilsim = RäknaTid(fjärilsim);
+                if (value.Contains(".") || value.Contains(",") || value.Contains(":") || value.Contains(";")) fjärilssim = Punkter(value);
+                else fjärilssim = value;
+                if (ÄrNummer(fjärilssim)) fjärilssim = RäknaTid(fjärilssim, Simsätten.fjärilsim);
+                OnPropertyChanged();
+            }
+        }
+        private int tilläggFjäril;
+        public int TilläggFjäril
+        {
+            get { return tilläggFjäril; }
+            set
+            {
+                tilläggFjäril = value;
+                if (ÄrNummer(fjärilssim)) fjärilssim = RäknaTid(fjärilssim, Simsätten.fjärilsim);
                 OnPropertyChanged();
             }
         }
@@ -67,10 +100,31 @@ namespace TeamCompetition.Models
             {
                 if (value.Contains(".") || value.Contains(",") || value.Contains(":") || value.Contains(";")) frisim = Punkter(value);
                 else frisim = value;
-                if (ÄrNummer(frisim)) frisim = RäknaTid(frisim);
+                if (ÄrNummer(frisim)) frisim = RäknaTid(frisim, Simsätten.frisim);
                 OnPropertyChanged();
             }
         }
+        private int tilläggFrisim;
+        public int TilläggFrisim
+        {
+            get { return tilläggFrisim; }
+            set
+            {
+                tilläggFrisim = value;
+                if (ÄrNummer(frisim)) frisim = RäknaTid(frisim, Simsätten.frisim);
+                OnPropertyChanged();
+            }
+        }
+        private int tilläggSummering;
+        public int TilläggSummering
+        {
+            get
+            {
+                tilläggSummering = TilläggRygg + TilläggFjäril + TilläggBröst + TilläggFrisim;
+                OnPropertyChanged();
+                return tilläggSummering;
+            }
+        } 
         private string summering;
         public string Summering
         {
@@ -133,7 +187,7 @@ namespace TeamCompetition.Models
             return Int32.TryParse(nummer, out num);
         }
 
-        private string RäknaTid(string tid)
+        private string RäknaTid(string tid, Simsätten Simsätt)
         {
             int minuter = 0;
             int sekunder = 0;
@@ -144,6 +198,21 @@ namespace TeamCompetition.Models
             {
                 if (tid.Length == 3) sekunder += Int32.Parse(tid.Substring(0, 1));
                 else sekunder += Int32.Parse(tid.Substring(tid.Length - 4, 2)); 
+                switch (Simsätt)
+                {
+                    case Simsätten.ryggsim:
+                        sekunder += TilläggRygg*UserSettings.TILLÄGGSSEKUNDER;
+                        break;
+                    case Simsätten.fjärilsim:
+                        sekunder += TilläggFjäril * UserSettings.TILLÄGGSSEKUNDER;
+                        break;
+                    case Simsätten.bröstsim:
+                        sekunder += TilläggBröst * UserSettings.TILLÄGGSSEKUNDER;
+                        break;
+                    case Simsätten.frisim:
+                        sekunder += TilläggFrisim * UserSettings.TILLÄGGSSEKUNDER;
+                        break;
+                }
             }
             if (tid.Length < 2) hundradelar += Int32.Parse(tid);
             else hundradelar += Int32.Parse(tid.Substring(tid.Length - 2, 2)); 
@@ -158,12 +227,12 @@ namespace TeamCompetition.Models
 
         public void SummeraResultat()
         {
-            if (ÄrNummer(frisim) && ÄrNummer(ryggsim) && ÄrNummer(bröstsim) && ÄrNummer(fjärilsim))
+            if (ÄrNummer(frisim) && ÄrNummer(ryggsim) && ÄrNummer(bröstsim) && ÄrNummer(fjärilssim))
             {
                 int minuter = 0;
                 int sekunder = 0;
                 int hundradelar = 0;
-                List<string> list = new List<string>() { frisim, ryggsim, bröstsim, fjärilsim };
+                List<string> list = new List<string>() { frisim, ryggsim, bröstsim, fjärilssim };
 
                 foreach (string s in list)
                 {
@@ -176,7 +245,7 @@ namespace TeamCompetition.Models
                     if (s.Length < 2) hundradelar += Int32.Parse(s);
                     else hundradelar += Int32.Parse(s.Substring(s.Length - 2, 2));
                 }
-
+                
                 sekunder += hundradelar / 100;
                 hundradelar = hundradelar % 100;
                 minuter += sekunder / 60;

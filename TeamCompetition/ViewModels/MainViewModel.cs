@@ -19,53 +19,142 @@ namespace TeamCompetition.ViewModels
 {
     public class MainViewModel : ObservableObject
     {
-        private ObservableCollection<Lag> teams = new ObservableCollection<Lag>();
-        public ObservableCollection<Lag> Teams
+        private ObservableCollection<Lag> teamsHerrar = new ObservableCollection<Lag>();
+        public ObservableCollection<Lag> TeamsHerrar
         { 
-            get { return teams; } 
+            get { return teamsHerrar; } 
             set { 
-                teams = value;
+                teamsHerrar = value;
                 OnPropertyChanged();
                 isSaved = false;
             }
         }
 
+        private ObservableCollection<Lag> teamsDamer = new ObservableCollection<Lag>();
+        public ObservableCollection<Lag> TeamsDamer
+        {
+            get { return teamsDamer; }
+            set
+            {
+                teamsDamer = value;
+                OnPropertyChanged();
+                isSaved = false;
+            }
+        }
+
+        private ObservableCollection<Lag> teamsMix = new ObservableCollection<Lag>();
+        public ObservableCollection<Lag> TeamsMix
+        {
+            get { return teamsMix; }
+            set
+            {
+                teamsMix = value;
+                OnPropertyChanged();
+                isSaved = false;
+            }
+        }
+
+        private string selectedTab;
+        public string SelectedTab
+        {
+            get => selectedTab;
+            set
+            {
+                selectedTab = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private Lag selectedItem;
+        public Lag SelectedItem
+        {
+            get => selectedItem;
+            set
+            {
+                selectedItem = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int selectedColumn;
+        public int SelectedColumn
+        {
+            get => selectedColumn;
+            set
+            {
+                selectedColumn = value;
+                OnPropertyChanged();
+            }
+        }
+
         protected bool isSaved;
 
-        private void RäknaUtPlacering()
+        private void RäknaUtPlacering(Lag Team)
         {
-            foreach(Lag lag in Teams)
+            if (Team.Summering != "")
             {
-                if (lag.Summering != "")
+                int placering = TeamsHerrar.Count;
+                foreach (Lag motståndare in TeamsHerrar)
                 {
-                    int placering = Teams.Count;
-                    foreach (Lag motståndare in Teams)
+                    if (motståndare.Summering != null)
                     {
-                        if (motståndare.Summering != null)
-                        {
-                            if (motståndare != lag && lag.Compare(motståndare.Summering))
-                            {
-                                placering--;
-                            }
-                        }
-                        else
+                        if (motståndare != Team && Team.Compare(motståndare.Summering))
                         {
                             placering--;
                         }
                     }
-                    if (placering <= 6) lag.Placering = placering.ToString();
-                    else lag.Placering = "DNQ";
+                    else
+                    {
+                        placering--;
+                    }
                 }
-                else lag.Placering = "DNQ";
+                if (UserSettings.FLERAHEAT || placering <= 6) Team.Placering = placering.ToString();
+                else Team.Placering = "DNQ";
             }
+            else Team.Placering = "DNQ";
         }
 
         private ICommand summera = null!;
         public ICommand Summera =>
             summera ??= summera = new RelayCommand(() =>
             {
-                foreach (Lag t in teams) t.SummeraResultat();
-                RäknaUtPlacering();
+                if (SelectedTab.Contains("Herrar")) 
+                {
+                    foreach (Lag t in TeamsHerrar) t.SummeraResultat();
+                    foreach (Lag t in TeamsHerrar) RäknaUtPlacering(t);
+                }
+                if (SelectedTab.Contains("Damer"))
+                {
+                    foreach (Lag t in TeamsDamer) t.SummeraResultat();
+                    foreach (Lag t in TeamsDamer) RäknaUtPlacering(t);
+                }
+                if (SelectedTab.Contains("Herrar"))
+                {
+                    foreach (Lag t in TeamsMix) t.SummeraResultat();
+                    foreach (Lag t in TeamsMix) RäknaUtPlacering(t);
+                }
+                OnPropertyChanged();
+            });
+
+        private ICommand adderaTillägg = null!;
+        public ICommand AdderaTillägg =>
+            adderaTillägg ??= adderaTillägg = new RelayCommand(() =>
+            {
+                if (SelectedColumn == 1) SelectedItem.TilläggRygg++;
+                else if (SelectedColumn == 3) SelectedItem.TilläggBröst++;
+                else if (SelectedColumn == 5) SelectedItem.TilläggFjäril++;
+                else if (SelectedColumn == 7) SelectedItem.TilläggFrisim++;
+                OnPropertyChanged();
+            });
+
+        private ICommand tabortTillägg = null!;
+        public ICommand TabortTillägg =>
+            tabortTillägg ??= tabortTillägg = new RelayCommand(() =>
+            {
+                if (SelectedColumn == 1) SelectedItem.TilläggRygg--;
+                else if (SelectedColumn == 3) SelectedItem.TilläggBröst--;
+                else if (SelectedColumn == 5) SelectedItem.TilläggFjäril--;
+                else if (SelectedColumn == 7) SelectedItem.TilläggFrisim--;
                 OnPropertyChanged();
             });
 
@@ -73,7 +162,18 @@ namespace TeamCompetition.ViewModels
         public ICommand Rensa =>
             rensa ??= rensa = new RelayCommand(() =>
             {
-                teams.Clear();
+                if (SelectedTab.Contains("Herrar"))
+                {
+                    TeamsHerrar.Clear();
+                }
+                if (SelectedTab.Contains("Damer"))
+                {
+                    TeamsDamer.Clear();
+                }
+                if (SelectedTab.Contains("Mix"))
+                {
+                    TeamsMix.Clear();
+                }
                 OnPropertyChanged();
             });
 
@@ -92,7 +192,7 @@ namespace TeamCompetition.ViewModels
                 {
                     using (StreamWriter writer = new("tävling.csv", false))
                     {
-                        foreach (Lag lag in Teams)
+                        foreach (Lag lag in TeamsHerrar)
                         {
                             writer.WriteLine(lag.ToString());
                         }
@@ -117,7 +217,7 @@ namespace TeamCompetition.ViewModels
                 {
                     using (StreamReader reader = new("tävling.csv"))
                     {
-                        Teams.Clear();
+                        TeamsHerrar.Clear();
                         string line;
                         
                         while ((line = reader.ReadLine()) != null)
@@ -135,7 +235,7 @@ namespace TeamCompetition.ViewModels
                                 data = fillData;
                             }
                             Lag lag = new() { Namn = data[0], Ryggsim = data[1], Bröstsim = data[2], Fjärilssim = data[3], Frisim = data[4], Summering = data[5], Placering = data[6] };
-                            Teams.Add(lag);
+                            TeamsHerrar.Add(lag);
                         }
                     }
                 }
