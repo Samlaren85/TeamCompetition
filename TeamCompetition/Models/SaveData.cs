@@ -8,9 +8,9 @@ namespace TeamCompetition.Models
 {
     public class SaveData
     {
-        List<Lag> HerrLag;
-        List<Lag> DamLag;
-        List<Lag> MixLag;
+        List<Team> HerrLag;
+        List<Team> DamLag;
+        List<Team> MixLag;
         string Settings;
     }
 }

@@ -26,11 +26,11 @@ namespace TeamCompetition.Views
         private void Window_Activated(object sender, System.EventArgs e)
         {
             //Visar flikarna för de aktiva deltagarna
-            if (UserSettings.DELTAGANDE_HERRAR) tabHerrar.Visibility = Visibility.Visible;
+            if (UserSettings.PARTISAPATING_MALE) tabHerrar.Visibility = Visibility.Visible;
             else tabHerrar.Visibility = Visibility.Collapsed;
-            if (UserSettings.DELTAGANDE_DAMER) tabDamer.Visibility = Visibility.Visible;
+            if (UserSettings.PARTISAPATING_FEMALE) tabDamer.Visibility = Visibility.Visible;
             else tabDamer.Visibility = Visibility.Collapsed;
-            if (UserSettings.DELTAGANDE_MIX) tabMix.Visibility = Visibility.Visible;
+            if (UserSettings.PARTISAPATING_MIX) tabMix.Visibility = Visibility.Visible;
             else tabMix.Visibility = Visibility.Collapsed;
         }
     }

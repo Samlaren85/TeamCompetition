@@ -6,16 +6,17 @@ using System.Threading.Tasks;
 
 namespace TeamCompetition.Models
 {
-    public enum Simsätten
+    public enum SwimStyles
     {
-        frisim, ryggsim, bröstsim, fjärilsim
+        crawl, backstroke, breaststroke, butterfly
     }
     public static class UserSettings
     {
-        public static int TILLÄGGSSEKUNDER = 5;
-        public static bool FLERAHEAT = true;
-        public static bool DELTAGANDE_HERRAR = true;
-        public static bool DELTAGANDE_DAMER = true;
-        public static bool DELTAGANDE_MIX = true;
+        public static int PENELTYSECONDS = 5;
+        public static int DISQUALIFYING_LIMIT = 2;
+        public static bool MULTIPLEHEATS = true;
+        public static bool PARTISAPATING_MALE = true;
+        public static bool PARTISAPATING_FEMALE = true;
+        public static bool PARTISAPATING_MIX = true;
     }
 }
