@@ -19,36 +19,36 @@ namespace TeamCompetition.ViewModels
 {
     public class MainViewModel : ObservableObject
     {
-        private ObservableCollection<Lag> teamsHerrar = new ObservableCollection<Lag>();
-        public ObservableCollection<Lag> TeamsHerrar
+        private ObservableCollection<Team> maleTeams = new ObservableCollection<Team>();
+        public ObservableCollection<Team> MaleTeams
         { 
-            get { return teamsHerrar; } 
+            get { return maleTeams; } 
             set { 
-                teamsHerrar = value;
+                maleTeams = value;
                 OnPropertyChanged();
                 isSaved = false;
             }
         }
 
-        private ObservableCollection<Lag> teamsDamer = new ObservableCollection<Lag>();
-        public ObservableCollection<Lag> TeamsDamer
+        private ObservableCollection<Team> femaleTeams = new ObservableCollection<Team>();
+        public ObservableCollection<Team> FemaleTeams
         {
-            get { return teamsDamer; }
+            get { return femaleTeams; }
             set
             {
-                teamsDamer = value;
+                femaleTeams = value;
                 OnPropertyChanged();
                 isSaved = false;
             }
         }
 
-        private ObservableCollection<Lag> teamsMix = new ObservableCollection<Lag>();
-        public ObservableCollection<Lag> TeamsMix
+        private ObservableCollection<Team> mixTeams = new ObservableCollection<Team>();
+        public ObservableCollection<Team> MixTeams
         {
-            get { return teamsMix; }
+            get { return mixTeams; }
             set
             {
-                teamsMix = value;
+                mixTeams = value;
                 OnPropertyChanged();
                 isSaved = false;
             }
@@ -65,13 +65,13 @@ namespace TeamCompetition.ViewModels
             }
         }
 
-        private Lag selectedItem;
-        public Lag SelectedItem
+        private Team selectedTeam;
+        public Team SelectedTeam
         {
-            get => selectedItem;
+            get => selectedTeam;
             set
             {
-                selectedItem = value;
+                selectedTeam = value;
                 OnPropertyChanged();
             }
         }
@@ -89,95 +89,115 @@ namespace TeamCompetition.ViewModels
 
         protected bool isSaved;
 
-        private void RäknaUtPlacering(Lag Team)
+        /// <summary>
+        /// Calculate the teams placement in the final.
+        /// Based on total accumulated time and added penelty time.
+        /// </summary>
+        /// <param name="Team"></param>
+        private void CalculatePlacement(Team Team)
         {
-            if (Team.Summering != "")
+            if (Team.Result != "" || Team.PeneltySummery<=UserSettings.DISQUALIFYING_LIMIT)
             {
-                int placering = TeamsHerrar.Count;
-                foreach (Lag motståndare in TeamsHerrar)
+                int placement = MaleTeams.Count;
+                foreach (Team opponent in MaleTeams)
                 {
-                    if (motståndare.Summering != null)
+                    if (opponent.Result != null)
                     {
-                        if (motståndare != Team && Team.Compare(motståndare.Summering))
+                        if (opponent != Team && Team.Compare(opponent.Result))
                         {
-                            placering--;
+                            placement--;
                         }
                     }
                     else
                     {
-                        placering--;
+                        placement--;
                     }
                 }
-                if (UserSettings.FLERAHEAT || placering <= 6) Team.Placering = placering.ToString();
-                else Team.Placering = "DNQ";
+                if (UserSettings.MULTIPLEHEATS || placement <= 6) Team.Placement = placement.ToString();
+                else Team.Placement = "DNQ";
             }
-            else Team.Placering = "DNQ";
+            else Team.Placement = "DSQ";
         }
 
-        private ICommand summera = null!;
-        public ICommand Summera =>
-            summera ??= summera = new RelayCommand(() =>
+        private ICommand calculateResult = null!;
+        /// <summary>
+        /// Calculatets the results for each group in the competition.
+        /// </summary>
+        public ICommand CalculateResult =>
+            calculateResult ??= calculateResult = new RelayCommand(() =>
             {
                 if (SelectedTab.Contains("Herrar")) 
                 {
-                    foreach (Lag t in TeamsHerrar) t.SummeraResultat();
-                    foreach (Lag t in TeamsHerrar) RäknaUtPlacering(t);
+                    foreach (Team t in MaleTeams) t.AddingResults();
+                    foreach (Team t in MaleTeams) CalculatePlacement(t);
                 }
                 if (SelectedTab.Contains("Damer"))
                 {
-                    foreach (Lag t in TeamsDamer) t.SummeraResultat();
-                    foreach (Lag t in TeamsDamer) RäknaUtPlacering(t);
+                    foreach (Team t in FemaleTeams) t.AddingResults();
+                    foreach (Team t in FemaleTeams) CalculatePlacement(t);
                 }
                 if (SelectedTab.Contains("Herrar"))
                 {
-                    foreach (Lag t in TeamsMix) t.SummeraResultat();
-                    foreach (Lag t in TeamsMix) RäknaUtPlacering(t);
+                    foreach (Team t in MixTeams) t.AddingResults();
+                    foreach (Team t in MixTeams) CalculatePlacement(t);
                 }
                 OnPropertyChanged();
             });
 
-        private ICommand adderaTillägg = null!;
-        public ICommand AdderaTillägg =>
-            adderaTillägg ??= adderaTillägg = new RelayCommand(() =>
+        private ICommand addPenelty = null!;
+        /// <summary>
+        /// Adds penelty time to a team at the specified event
+        /// </summary>
+        public ICommand AddPenelty =>
+            addPenelty ??= addPenelty = new RelayCommand(() =>
             {
-                if (SelectedColumn == 1) SelectedItem.TilläggRygg++;
-                else if (SelectedColumn == 3) SelectedItem.TilläggBröst++;
-                else if (SelectedColumn == 5) SelectedItem.TilläggFjäril++;
-                else if (SelectedColumn == 7) SelectedItem.TilläggFrisim++;
+                if (SelectedColumn == 1) SelectedTeam.PeneltyBackstroke++;
+                else if (SelectedColumn == 3) SelectedTeam.PeneltyBreaststroke++;
+                else if (SelectedColumn == 5) SelectedTeam.PeneltyButterfly++;
+                else if (SelectedColumn == 7) SelectedTeam.PeneltyCrawl++;
                 OnPropertyChanged();
             });
 
-        private ICommand tabortTillägg = null!;
-        public ICommand TabortTillägg =>
-            tabortTillägg ??= tabortTillägg = new RelayCommand(() =>
+        private ICommand removePenelty = null!;
+        /// <summary>
+        /// Removes penelty time to a team at the specified event
+        /// </summary>
+        public ICommand RemovePenelty =>
+            removePenelty ??= removePenelty = new RelayCommand(() =>
             {
-                if (SelectedColumn == 1) SelectedItem.TilläggRygg--;
-                else if (SelectedColumn == 3) SelectedItem.TilläggBröst--;
-                else if (SelectedColumn == 5) SelectedItem.TilläggFjäril--;
-                else if (SelectedColumn == 7) SelectedItem.TilläggFrisim--;
+                if (SelectedColumn == 1) SelectedTeam.PeneltyBackstroke--;
+                else if (SelectedColumn == 3) SelectedTeam.PeneltyBreaststroke--;
+                else if (SelectedColumn == 5) SelectedTeam.PeneltyButterfly--;
+                else if (SelectedColumn == 7) SelectedTeam.PeneltyCrawl--;
                 OnPropertyChanged();
             });
 
-        private ICommand rensa = null!;
-        public ICommand Rensa =>
-            rensa ??= rensa = new RelayCommand(() =>
+        private ICommand clearTable = null!;
+        /// <summary>
+        /// Clears the selected table from all data
+        /// </summary>
+        public ICommand ClearTable =>
+            clearTable ??= clearTable = new RelayCommand(() =>
             {
                 if (SelectedTab.Contains("Herrar"))
                 {
-                    TeamsHerrar.Clear();
+                    MaleTeams.Clear();
                 }
                 if (SelectedTab.Contains("Damer"))
                 {
-                    TeamsDamer.Clear();
+                    FemaleTeams.Clear();
                 }
                 if (SelectedTab.Contains("Mix"))
                 {
-                    TeamsMix.Clear();
+                    MixTeams.Clear();
                 }
                 OnPropertyChanged();
             });
 
         private ICommand save = null!;
+        /// <summary>
+        /// Saves the data to a txt file in the application directory
+        /// </summary>
         public ICommand Save =>
             save ??= save = new RelayCommand(() =>
             {
@@ -192,9 +212,9 @@ namespace TeamCompetition.ViewModels
                 {
                     using (StreamWriter writer = new("tävling.csv", false))
                     {
-                        foreach (Lag lag in TeamsHerrar)
+                        foreach (Team team in MaleTeams)
                         {
-                            writer.WriteLine(lag.ToString());
+                            writer.WriteLine(team.ToString());
                         }
                     }
                     MessageBox.Show("Data sparad!", "Sparad");
@@ -203,6 +223,9 @@ namespace TeamCompetition.ViewModels
             });
 
         private ICommand load = null!;
+        /// <summary>
+        /// Loads the data from a txt file in the application directory
+        /// </summary>
         public ICommand Load =>
             load ??= load = new RelayCommand(() =>
             {
@@ -217,7 +240,7 @@ namespace TeamCompetition.ViewModels
                 {
                     using (StreamReader reader = new("tävling.csv"))
                     {
-                        TeamsHerrar.Clear();
+                        MaleTeams.Clear();
                         string line;
                         
                         while ((line = reader.ReadLine()) != null)
@@ -234,8 +257,8 @@ namespace TeamCompetition.ViewModels
                                 }
                                 data = fillData;
                             }
-                            Lag lag = new() { Namn = data[0], Ryggsim = data[1], Bröstsim = data[2], Fjärilssim = data[3], Frisim = data[4], Summering = data[5], Placering = data[6] };
-                            TeamsHerrar.Add(lag);
+                            Team lag = new() { Name = data[0], Backstroke = data[1], Breaststroke = data[2], Butterfly = data[3], Crawl = data[4], Result = data[5], Placement = data[6] };
+                            MaleTeams.Add(lag);
                         }
                     }
                 }
@@ -244,6 +267,10 @@ namespace TeamCompetition.ViewModels
         public MessageBoxResult result = MessageBoxResult.None;
 
         private ICommand exit = null!;
+        /// <summary>
+        /// Checks if the data has been saved and prompts the user if not so.
+        /// Then exits the application if user chooses it.
+        /// </summary>
         public ICommand Exit =>
             exit ??= exit = new RelayCommand(() =>
             {
