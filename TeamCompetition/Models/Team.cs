@@ -318,23 +318,20 @@ namespace TeamCompetition.Models
         /// </summary>
         /// <param name="opponent"></param>
         /// <returns></returns>
-        public bool Compare(string opponent)
+        public bool Compare(Team opponent)
         {
-            if (opponent != "")
+            if (opponent != null)
             {
-                int teamTime = TextTimeToInt(Result);
-                int opponentTime = TextTimeToInt(opponent);
-
-                return teamTime < opponentTime;
+                return TextTimeToInt() < opponent.TextTimeToInt();
             }
             else return true;
         }
 
-        private int TextTimeToInt(string timeAsText)
+        public int TextTimeToInt()
         {
-            int minuts = Int32.Parse(timeAsText.Split(':')[0]);
-            int seconds = Int32.Parse(timeAsText.Split(':')[1].Split('.')[0]);
-            int hundredths = Int32.Parse(timeAsText.Split(':')[1].Split('.')[1].Split(" [")[0]);
+            int minuts = Int32.Parse(Result.Split(':')[0]);
+            int seconds = Int32.Parse(Result.Split(':')[1].Split('.')[0]);
+            int hundredths = Int32.Parse(Result.Split(':')[1].Split('.')[1].Split(" [")[0]);
             return (((minuts * 60) + seconds) * 100) + hundredths;
         }
 

@@ -14,7 +14,7 @@
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="Meny">
-                <MenuItem Header="Inställningar"/>
+                <MenuItem Header="Inställningar" Command="{Binding Settings}"/>
                 <MenuItem Header="Spara" Command="{Binding Save}"/>
                 <MenuItem Header="Ladda" Command="{Binding Load}"/>
                 <MenuItem Header="Avsluta" Command="{Binding Exit}"/>
@@ -39,7 +39,7 @@
                 </DataGrid>
             </TabItem>
             <TabItem x:Name="tabDamer" Header="Damer">
-                <DataGrid x:Name="tabellDamer" ItemsSource="{Binding FemaleTeams, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedItem}" AutoGenerateColumns="False" SelectionMode="Single">
+                <DataGrid x:Name="tabellDamer" ItemsSource="{Binding FemaleTeams, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedItem}" SelectedIndex="{Binding SelectedColumn}" AutoGenerateColumns="False" SelectionMode="Single">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Lagnamn" Width="250" Binding="{Binding Name}"/>
                         <DataGridTextColumn Header="Ryggsim" Width="*"  Binding="{Binding Backstroke}"/>
@@ -52,7 +52,7 @@
                 </DataGrid>
             </TabItem>
             <TabItem x:Name="tabMix" Header="Mix">
-                <DataGrid x:Name="tabellMix" ItemsSource="{Binding MixTeams, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedItem}" AutoGenerateColumns="False" SelectionMode="Single">
+                <DataGrid x:Name="tabellMix" ItemsSource="{Binding MixTeams, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedItem}" SelectedIndex="{Binding SelectedColumn}" AutoGenerateColumns="False" SelectionMode="Single">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Lagnamn" Width="250" Binding="{Binding Name}"/>
                         <DataGridTextColumn Header="Ryggsim" Width="*"  Binding="{Binding Backstroke}"/>
