@@ -18,5 +18,10 @@ namespace TeamCompetition.Models
         public static bool PARTISAPATING_MALE = true;
         public static bool PARTISAPATING_FEMALE = true;
         public static bool PARTISAPATING_MIX = true;
+
+        public static string ToString()
+        {
+            return $"{PENELTYSECONDS};{DISQUALIFYING_LIMIT};{MULTIPLEHEATS};{PARTISAPATING_MALE};{PARTISAPATING_FEMALE};{PARTISAPATING_MIX}";
+        }
     }
 }

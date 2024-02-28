@@ -8,9 +8,15 @@ namespace TeamCompetition.Models
 {
     public class SaveData
     {
-        List<Team> HerrLag;
-        List<Team> DamLag;
-        List<Team> MixLag;
-        string Settings;
+        public List<Team> SavedMaleTeams;
+        public List<Team> SavedFemaleTeams;
+        public List<Team> SavedMixedTeams;
+
+        public SaveData(List<Team> male, List<Team> female, List<Team> mixed)
+        {
+            SavedMaleTeams = male;
+            SavedFemaleTeams = female;
+            SavedMixedTeams = mixed;
+        }
     }
 }

@@ -14,6 +14,8 @@ using System.IO;
 using System.Windows.Shapes;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Text.Json.Nodes;
+using Newtonsoft.Json;
 
 namespace TeamCompetition.ViewModels
 {
@@ -54,6 +56,27 @@ namespace TeamCompetition.ViewModels
             }
         }
 
+        public ObservableCollection <Team> CurrentTeams
+        {
+            get 
+            {
+                if (SelectedTab.Contains("Herrar"))
+                {
+                    return MaleTeams;
+                }
+                if (SelectedTab.Contains("Damer"))
+                {
+                    return FemaleTeams;
+                }
+                if (SelectedTab.Contains("Mix"))
+                {
+                    return MixTeams;
+                }
+                return null;
+            }
+        }
+
+
         private string selectedTab;
         public string SelectedTab
         {
@@ -61,6 +84,7 @@ namespace TeamCompetition.ViewModels
             set
             {
                 selectedTab = value;
+                
                 OnPropertyChanged();
             }
         }
@@ -96,14 +120,16 @@ namespace TeamCompetition.ViewModels
         /// <param name="Team"></param>
         private void CalculatePlacement(Team Team)
         {
-            if (Team.Result != "" || Team.PeneltySummery<=UserSettings.DISQUALIFYING_LIMIT)
+            if (Team.Result.Equals("") || Team.PeneltySummery>UserSettings.DISQUALIFYING_LIMIT) Team.Placement = "DSQ";
+            else 
             {
-                int placement = MaleTeams.Count;
-                foreach (Team opponent in MaleTeams)
+                int placement = CurrentTeams.Count;
+                
+                foreach (Team opponent in CurrentTeams)
                 {
-                    if (opponent.Result != null)
+                    if (!opponent.Result.Equals(""))
                     {
-                        if (opponent != Team && Team.Compare(opponent.Result))
+                        if (opponent != Team && Team.Compare(opponent))
                         {
                             placement--;
                         }
@@ -116,31 +142,20 @@ namespace TeamCompetition.ViewModels
                 if (UserSettings.MULTIPLEHEATS || placement <= 6) Team.Placement = placement.ToString();
                 else Team.Placement = "DNQ";
             }
-            else Team.Placement = "DSQ";
+            
         }
 
         private ICommand calculateResult = null!;
         /// <summary>
-        /// Calculatets the results for each group in the competition.
+        /// Clears and calculatets the results for each group in the competition.
         /// </summary>
         public ICommand CalculateResult =>
             calculateResult ??= calculateResult = new RelayCommand(() =>
             {
-                if (SelectedTab.Contains("Herrar")) 
-                {
-                    foreach (Team t in MaleTeams) t.AddingResults();
-                    foreach (Team t in MaleTeams) CalculatePlacement(t);
-                }
-                if (SelectedTab.Contains("Damer"))
-                {
-                    foreach (Team t in FemaleTeams) t.AddingResults();
-                    foreach (Team t in FemaleTeams) CalculatePlacement(t);
-                }
-                if (SelectedTab.Contains("Herrar"))
-                {
-                    foreach (Team t in MixTeams) t.AddingResults();
-                    foreach (Team t in MixTeams) CalculatePlacement(t);
-                }
+                foreach (Team t in CurrentTeams) t.Result = "";
+                foreach (Team t in CurrentTeams) t.AddingResults();
+                foreach (Team t in CurrentTeams) CalculatePlacement(t);
+                
                 OnPropertyChanged();
             });
 
@@ -179,18 +194,7 @@ namespace TeamCompetition.ViewModels
         public ICommand ClearTable =>
             clearTable ??= clearTable = new RelayCommand(() =>
             {
-                if (SelectedTab.Contains("Herrar"))
-                {
-                    MaleTeams.Clear();
-                }
-                if (SelectedTab.Contains("Damer"))
-                {
-                    FemaleTeams.Clear();
-                }
-                if (SelectedTab.Contains("Mix"))
-                {
-                    MixTeams.Clear();
-                }
+                CurrentTeams.Clear();
                 OnPropertyChanged();
             });
 
@@ -210,12 +214,15 @@ namespace TeamCompetition.ViewModels
                 result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
                 if (result == MessageBoxResult.Yes)
                 {
-                    using (StreamWriter writer = new("tävling.csv", false))
+                    SaveData saveData = new SaveData(MaleTeams.ToList(), FemaleTeams.ToList(), MixTeams.ToList());
+                    
+                    using (StreamWriter writer = new("tävling.json", false))
                     {
-                        foreach (Team team in MaleTeams)
-                        {
-                            writer.WriteLine(team.ToString());
-                        }
+                        writer.Write(JsonConvert.SerializeObject(saveData));
+                    }
+                    using (StreamWriter writer = new("settings.dat", false))
+                    {
+                        writer.Write(UserSettings.ToString());
                     }
                     MessageBox.Show("Data sparad!", "Sparad");
                     isSaved = true;
@@ -238,29 +245,28 @@ namespace TeamCompetition.ViewModels
                 result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
                 if (result == MessageBoxResult.Yes)
                 {
-                    using (StreamReader reader = new("tävling.csv"))
+                    MaleTeams.Clear();
+                    FemaleTeams.Clear();
+                    MixTeams.Clear();
+                    SaveData loadData;
+                    string[] Settings = new string[6];
+                    using (StreamReader reader = new("tävling.json"))
                     {
-                        MaleTeams.Clear();
-                        string line;
-                        
-                        while ((line = reader.ReadLine()) != null)
-                        {
-                            string[] data = line.Split(';');
-                            if (data.Length < 7)
-                            {
-                                string[] fillData = new string[7];
-                                int i = 0;
-                                foreach (string str in data)
-                                {
-                                    fillData[i] = str;
-                                    i++;
-                                }
-                                data = fillData;
-                            }
-                            Team lag = new() { Name = data[0], Backstroke = data[1], Breaststroke = data[2], Butterfly = data[3], Crawl = data[4], Result = data[5], Placement = data[6] };
-                            MaleTeams.Add(lag);
-                        }
+                        loadData = JsonConvert.DeserializeObject<SaveData>(reader.ReadToEnd());
                     }
+                    using (StreamReader reader = new("settings.dat"))
+                    {
+                        Settings = reader.ReadToEnd().Split(';');
+                    }
+                    foreach (Team team in loadData.SavedMaleTeams) MaleTeams.Add(team);
+                    foreach (Team team in loadData.SavedFemaleTeams) FemaleTeams.Add(team);
+                    foreach (Team team in loadData.SavedMixedTeams) MixTeams.Add(team);
+                    Int32.TryParse(Settings[0], out UserSettings.PENELTYSECONDS);
+                    Int32.TryParse(Settings[1], out UserSettings.DISQUALIFYING_LIMIT);
+                    bool.TryParse(Settings[2], out UserSettings.MULTIPLEHEATS);
+                    bool.TryParse(Settings[3], out UserSettings.PARTISAPATING_MALE);
+                    bool.TryParse(Settings[4], out UserSettings.PARTISAPATING_FEMALE);
+                    bool.TryParse(Settings[5], out UserSettings.PARTISAPATING_MIX);
                 }
             });
         
