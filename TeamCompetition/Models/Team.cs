@@ -288,7 +288,7 @@ namespace TeamCompetition.Models
                 int hundradelar = 0;
 
                 // Compiles a list of the teams results in every event
-                List<string> list = new List<string>() { Crawl, Backstroke, Breaststroke, Butterfly };
+                List<string> list = new List<string>() { crawl, backstroke, breaststroke, butterfly };
 
                 // Iterates through the list of results to add up the total
                 foreach (string s in list)
@@ -322,18 +322,20 @@ namespace TeamCompetition.Models
         {
             if (opponent != "")
             {
-                int minuts = Int32.Parse(Result.Split(':')[0]);
-                int seconds = Int32.Parse(Result.Split(':')[1].Split('.')[0]);
-                int hundredths = Int32.Parse(Result.Split(':')[1].Split('.')[1]);
-                int teamTime = (((minuts * 60) + seconds) * 100) + hundredths;
-                minuts = Int32.Parse(opponent.Split(':')[0]);
-                seconds = Int32.Parse(opponent.Split(':')[1].Split('.')[0]);
-                hundredths = Int32.Parse(opponent.Split(':')[1].Split('.')[1]);
-                int opponentTime = (((minuts * 60) + seconds) * 100) + hundredths;
+                int teamTime = TextTimeToInt(Result);
+                int opponentTime = TextTimeToInt(opponent);
 
                 return teamTime < opponentTime;
             }
             else return true;
+        }
+
+        private int TextTimeToInt(string timeAsText)
+        {
+            int minuts = Int32.Parse(timeAsText.Split(':')[0]);
+            int seconds = Int32.Parse(timeAsText.Split(':')[1].Split('.')[0]);
+            int hundredths = Int32.Parse(timeAsText.Split(':')[1].Split('.')[1].Split(" [")[0]);
+            return (((minuts * 60) + seconds) * 100) + hundredths;
         }
 
         public override string ToString()
